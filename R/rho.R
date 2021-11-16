@@ -12,6 +12,3 @@ rho=function(Ta,Elev,RelativeHumidity,WS,BodyLength,Type){ # Temperature in Cels
   VPG=SVDs-(RelativeHumidity*SVDa) # measured in mg/cm^3
   return(VPG)
 }
-
-### Questions for Amy:
-# This spits out multiple values (changes with 'Type'). This relates to function 'T_e' or T_eh'...so I need to solve those functions first.

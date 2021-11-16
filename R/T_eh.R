@@ -5,6 +5,3 @@ T_eh <- function(Temperature, Elev, RelativeHumidity, WS, BodyLength){
   HumOp = Temperature + (0.00666/(slope_mf(Temperature,Elev)+ 0.00666) * ((Rabs(Temperature) - 0.96 * 0.0000000567*((Temperature+273.15)^4))/(29.07 *(gr(Temperature)+gha(WS,BodyLength))) - VPD(Temperature,RelativeHumidity)/(0.00666*Pre(Elev))))
   return(HumOp)
 }
-
-### Questions for Amy:
-# Why does this spit out three values??

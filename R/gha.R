@@ -3,5 +3,5 @@
 
 gha<-function(WS, BodyLength){
   blhc = 1.4 * 0.135 * (WS/BodyLength)^0.5
-  print(blhc)
+  return(blhc)
 }

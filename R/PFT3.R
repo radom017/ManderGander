@@ -1,18 +1,17 @@
-# Calculate potential foraging time (hours) while incorporating the 'avoidance' behavior used by Riddell et al. (2018). The avoidance behavior means that salamanders will not become surface active (where they are assumed to be consuming prey) if the surface conditions would put them in an energetic deficit compared to fasting underground. In exploratory analyses, the conditions under which salamanders use an 'avoidance' behavior resemble the absolute limits to surface activity imposed by Gifford and Kozak (2012) and Lyons and Kozak (2020). By 'absolute limits', we refer to temperature ranges under which salamanders are assumed to never forage, which was based on field observations by Feder et al. (1982). This function becomes much more complicated than PFT1 or PFT2 because it requires estimates of salamander metabolic rates and energetic assimilation from food. Before running this function, the researcher must create their own functions: one called 'EnergyAssimilation' (kJ/g/h; measure of energetic assimilation as a function of temperature) and a second called 'ActiveMR' (Joules/hour; active metabolic rate as a function of temperature). This also requires a value for the resting metabolic rate while underground ('RestingMRu'; Joules/hour). Ideally this would be estimated from an estimate of soil temperature and the resting metabolic rate, but I just assumed a constant soil temperature when I built this for my own data.
-##
+# Calculate potential foraging time (hours) while incorporating the 'avoidance' behavior used by Riddell et al. (2018). The avoidance behavior means that salamanders will not become surface active (where they are assumed to be consuming prey) if the surface conditions would put them in an energetic deficit compared to fasting underground. This function is more complicated than PFT1 or PFT2 because it requires estimates of salamander metabolic rates and energetic assimilation from food.
+## This assumes that salamanders are surface active until a threshold amount of water is lost to evaporation, at which point they return underground. This threshold amount of water lost is the water time limit (WTL; grams), which is a fraction multiplied by the organism's mass. The water time limit should be empirically determined (e.g., Londos and Feder 1984).  Estimates of salamander surface area use formula of Whitford and Hutchinson (1967). Salamanders will not become active if energetic gains would be lower than losses, as determined between the difference of an energy assimilation curve (modeled as a beta curve (e.g., Clay and Gifford 2017, 2018) and metabolic rate curve. Input parameters for the metabolic rate curve are assumed to follow the form:
+# "log10(RMR) = RMR_T_s*Temperature + RMR_M_s*log10(mass) +RMR_I", where the parameters are the resting metabolic rate, coefficient for temperature, temperature (degrees Celsius), slope for log10(mass), mass, and intercept, respectively. See Gifford and Kozak (2012) for an example. During surface activity, it is assumed that the metabolic rate increases by a factor of 1.375, based on data from Bennett and Houck (1983) and implementation of Gifford and Kozak (2012).
+## Temperature = ambient temperature (degrees Celsius), Elev = elevation (m), RelativeHumidity = relative humidity (expressed as decimal), R = resistance to water loss (s/cm), mass = body mass (g), WTL = water time limit (decimal), WS = wind speed (m/s), BodyLength = length of body (m), Type = either 'T_eh', 'T_e', or 'T_a' (see function 'rho' for explanation), CTmax = x-intercept of energy assimilation curve (degrees Celsius), Topt = temperature where energy assimilation is maximized (degrees Celsius) , max_energy = energy from food at Topt (kJ), RMR_I = intercept of metabolic rate curve (log10(kJ)), RMR_T_s = slope of temperature in metabolic rate curve (unitless), RMR_M_s = slope of log10(mass) in metabolic rate curve (unitless), soil_temp = temperature of soil at depth where salamanders would remain if belowground (degrees Celsius).
 
 PFT3=function(Temperature,Elev,RelativeHumidity,R,mass,WTL,WS,BodyLength,Type,CTmax,Topt,max_energy,RMR_I,RMR_T_s,RMR_M_s,soil_temp){
   time = PFT1(Temperature,Elev,RelativeHumidity,R,mass,WTL,WS,BodyLength,Type) # This and the next couple lines are essential for removing infinite values of time.
   time = ifelse(time > 9, 9, time)
-  RestingMR=function(Temperature,mass){RMR=0.001*5*4.184*10^(RMR_T_s*Temperature + (RMR_M_s*log10(mass))-RMR_I)
-  return(RMR)}
-  EnergyAssimilation=function(Temperature,mass){EA=0.107*0.9460786*(((CTmax-Temperature)/(CTmax-Topt))*(Temperature/Topt)^(Topt/(CTmax-Topt)))*mass/24
-  return(EA)}
-  eat=EnergyAssimilation(Temperature,mass)*time
-  exercise=1.375*RestingMR(Temperature,mass)*time
-  above = ifelse((eat - exercise) > RestingMR(soil_temp), 1, 0)
+  RMR=0.001*5*4.184*10^(RMR_T_s*Temperature + (RMR_M_s*log10(mass))+RMR_I)
+  EA=max_energy*(((CTmax-Temperature)/(CTmax-Topt))*(Temperature/Topt)^(Topt/(CTmax-Topt)))*mass/24
+  eat=EA*time
+  exercise=1.375*RMR*time
+  above = ifelse((eat - exercise) > -1*(0.001*5*4.184*10^(RMR_T_s*soil_temp + (RMR_M_s*log10(mass))+RMR_I)), 1, 0)
   PFT3_activity<-above*time
-  #PFT3_activity = ifelse(is.na(PFT3_activity) == TRUE, 9, PFT3_activity)
   return(PFT3_activity)
 }
 
