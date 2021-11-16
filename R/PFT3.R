@@ -14,6 +14,3 @@ PFT3=function(Temperature,Elev,RelativeHumidity,R,mass,WTL,WS,BodyLength,Type,CT
   PFT3_activity<-above*time
   return(PFT3_activity)
 }
-
-### Questions for Amy:
-# The error tells me that 'mass' is missing, but I don't see where. Feeling very stumped on this one.
