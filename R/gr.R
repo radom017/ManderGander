@@ -2,6 +2,6 @@
 ## Temperature = ambient temperature (degrees Celsius).
 
 gr = function(Temperature){
-  RadCon = 4 * 0.0000000567 * ((Temperature+273.15)^4)/29.07
+  RadCon = 4 * 0.0000000567 * ((Temperature+273.15)^3)/29.07
   return(RadCon)
 }
